@@ -1,10 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Website Pertama Saya</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator NPWP Suami Istri</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>Hello World 🚀</h1>
-  <p>Website ini berhasil online di Vercel</p>
+
+  <div class="container">
+    <h1>Kalkulator Perbandingan NPWP Suami & Istri</h1>
+    <p class="subtitle">Simulasi pajak PPh 21: NPWP digabung vs dipisah (PH/MT)</p>
+
+    <div class="grid">
+      <div>
+        <label>Penghasilan Neto Suami (Rp)</label>
+        <input type="number" id="incomeHusband" placeholder="contoh: 110.000.000" />
+      </div>
+      <div>
+        <label>Penghasilan Neto Istri (Rp)</label>
+        <input type="number" id="incomeWife" placeholder="contoh: 100.000.000" />
+      </div>
+      <div>
+        <label>Status PTKP Suami</label>
+        <select id="ptkpHusband">
+          <option value="58500000">K/0 (58.500.000)</option>
+          <option value="63000000">K/1 (63.000.000)</option>
+          <option value="67500000">K/2 (67.500.000)</option>
+          <option value="72000000">K/3 (72.000.000)</option>
+        </select>
+      </div>
+      <div>
+        <label>Status PTKP Istri</label>
+        <select id="ptkpWife">
+          <option value="54000000">TK/0 (54.000.000)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button onclick="calculate()">Hitung Pajak</button>
+    </div>
+
+    <div id="output" class="result" style="display:none"></div>
+  </div>
+
+  <!-- JS -->
+  <script src="js/script.js"></script>
 </body>
 </html>
