@@ -107,12 +107,12 @@ function showDetailPPh(label, income, ptkp) {
       ${formatRupiah(ptkp)}<br><br>
 
       <strong>Step 3 – Penghitungan PKP</strong><br>
-      PKP = Penghasilan Neto − PTKP<br>
-      PKP = ${formatRupiah(income)} − ${formatRupiah(ptkp)}<br>
+      PKP = Penghasilan Neto - PTKP<br>
+      PKP = ${formatRupiah(income)} - ${formatRupiah(ptkp)}<br>
       <strong>PKP = ${formatRupiah(pkp)}</strong><br><br>
 
       <strong>Step 4 – Perhitungan Tarif Progresif</strong><br>
-      ${pkp <= 60000000 ? '' : breakdown.html}<br>
+      ${pkp > 0 ? breakdown.html : 'PKP ≤ 0 → Tidak ada PPh terutang<br>'}<br>
 
       <strong>Total PPh 21 Setahun</strong><br>
       ${breakdown.sumText}<br>
@@ -123,26 +123,23 @@ function showDetailPPh(label, income, ptkp) {
 
 /* =====================    DETAIL – PH/MT (GABUNG) ===================== */
 function showDetailPHMT(data) {
-  // Hitung total penghasilan dan PTKP
   const totalIncome = (data.ih || 0) + (data.iw || 0);
   const totalPTKP = (data.ptkpHusband || 0) + (data.ptkpWife || 0);
-
-  // PKP gabungan
   const pkpCombined = Math.max(totalIncome - totalPTKP, 0);
 
-  // Breakdown PPh progresif gabungan
-  const breakdown = pkpCombined > 0 ? breakdownPPhDetailed(pkpCombined) : { html: '', total: 0 };
+  const breakdown = pkpCombined > 0 ? breakdownPPhDetailed(pkpCombined) : {
+    html: 'PKP ≤ 0 → Tidak ada PPh terutang<br>',
+    sumText: '',
+    total: 0
+  };
   const totalPPh = breakdown.total;
 
-  // Alokasi PPh suami & istri (proporsional)
   const pphHusband = totalIncome > 0 ? Math.round((data.ih / totalIncome) * totalPPh) : 0;
   const pphWife = totalIncome > 0 ? totalPPh - pphHusband : 0;
 
-  // Kurang / lebih bayar, fallback 0
   const kurangBayarHusband = pphHusband - (data.pphHusbandPaid || 0);
   const kurangBayarWife = pphWife - (data.pphWifePaid || 0);
 
-  // Hanya tampilkan Step 4–6 jika PKP gabungan > 0
   const showProgresif = pkpCombined > 0;
 
   openSidebar(
@@ -153,30 +150,39 @@ function showDetailPHMT(data) {
       Istri: ${formatRupiah(data.iw || 0)}<br>
       <strong>Total: ${formatRupiah(totalIncome)}</strong><br><br>
 
-      <strong>Step 2 – PTKP Digabung</strong><br>
-      ${formatRupiah(totalPTKP)}<br><br>
+      <strong>Step 2 – PTKP</strong><br>
+      Suami: ${formatRupiah(data.ptkpHusband || 0)}<br>
+      Istri: ${formatRupiah(data.ptkpWife || 0)}<br>
+      <strong>Total PTKP: ${formatRupiah(totalPTKP)}</strong><br><br>
 
       <strong>Step 3 – PKP Gabungan</strong><br>
       ${formatRupiah(pkpCombined)}<br><br>
 
       ${showProgresif ? `
         <strong>Step 4 – Perhitungan Tarif Progresif</strong><br>
-        ${breakdown.html}<br>
+        ${breakdown.html.replace(/<strong>/g,'').replace(/<\/strong>/g,'')}<br>
 
-        <strong>Total PPh 21 Gabungan</strong><br>
-        ${breakdown.sumText} <strong>= ${formatRupiah(totalPPh)}</strong><br><br>
+        <strong>Total PPh 21 Gabungan: ${formatRupiah(totalPPh)}</strong><br><br>
 
         <strong>Step 5 – Alokasi PPh ke Suami & Istri</strong><br>
-        PPh Suami: <span class="clickable" onclick='showDetailPPh("Suami", ${data.ih || 0}, ${data.ptkpHusband || 0})'>
-          ${formatRupiah(pphHusband)}
+        <span style="background-color: #B2F7EF; padding: 2px 4px; border-radius: 3px;" 
+              title="PPh Gabungan: ${formatRupiah(totalPPh)}\nProporsi Suami: ${(data.ih/totalIncome*100).toFixed(2)}%\nAlokasi PPh Suami: ${formatRupiah(pphHusband)}">
+          PPh Suami: ${formatRupiah(pphHusband)}
         </span><br>
-        PPh Istri: <span class="clickable" onclick='showDetailPPh("Istri", ${data.iw || 0}, ${data.ptkpWife || 0})'>
-          ${formatRupiah(pphWife)}
+        <span style="background-color: #B2F7EF; padding: 2px 4px; border-radius: 3px;" 
+              title="PPh Gabungan: ${formatRupiah(totalPPh)}\nProporsi Istri: ${(data.iw/totalIncome*100).toFixed(2)}%\nAlokasi PPh Istri: ${formatRupiah(pphWife)}">
+          PPh Istri: ${formatRupiah(pphWife)}
         </span><br><br>
 
         <strong>Step 6 – PPh Kurang / Lebih Bayar</strong><br>
-        Suami: ${formatRupiah(kurangBayarHusband)}<br>
-        Istri: ${formatRupiah(kurangBayarWife)}
+        <span style="background-color: #FFF3B0; padding: 2px 4px; border-radius: 3px;" 
+              title="PPh Suami: ${formatRupiah(pphHusband)}\nSudah dibayar: ${formatRupiah(data.pphHusbandPaid || 0)}\nKurang / Lebih Bayar: ${formatRupiah(kurangBayarHusband)}">
+          ${formatRupiah(kurangBayarHusband)}
+        </span><br>
+        <span style="background-color: #FFF3B0; padding: 2px 4px; border-radius: 3px;" 
+              title="PPh Istri: ${formatRupiah(pphWife)}\nSudah dibayar: ${formatRupiah(data.pphWifePaid || 0)}\nKurang / Lebih Bayar: ${formatRupiah(kurangBayarWife)}">
+          ${formatRupiah(kurangBayarWife)}
+        </span><br>
       ` : ''}
     `
   );
@@ -216,8 +222,6 @@ function calculate() {
         <th>Istri</th>
       </tr>
 
-      
-    
       <tr>
         <th>PPh Terpisah</th>
         <td class="clickable"
@@ -234,14 +238,14 @@ function calculate() {
         <th>Alokasi PH/MT</th>
         <td class="clickable"
             onclick='showDetailPHMT(${JSON.stringify({
-              ih, iw, totalIncome, totalPTKP, pkpCombined,
+              ih, iw, ptkpHusband: ptkpH, ptkpWife: ptkpW, totalIncome, totalPTKP, pkpCombined,
               pphHusbandPaid: pphH, pphWifePaid: pphW
             })})'>
           ${formatRupiah(allocH)}
         </td>
         <td class="clickable"
             onclick='showDetailPHMT(${JSON.stringify({
-              ih, iw, totalIncome, totalPTKP, pkpCombined,
+              ih, iw, ptkpHusband: ptkpH, ptkpWife: ptkpW, totalIncome, totalPTKP, pkpCombined,
               pphHusbandPaid: pphH, pphWifePaid: pphW
             })})'>
           ${formatRupiah(allocW)}
